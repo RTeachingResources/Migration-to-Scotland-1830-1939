@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Highland & Harbour: Migration to Scotland Quest (1830–1939)</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --text-main: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent-gold: #f1e05a;
+      --accent-green: #2ea043;
+      --accent-green-hover: #3fb950;
+      --accent-red: #da3633;
+      --accent-blue: #58a6ff;
+      --accent-purple: #bc8cff;
+      --font-stack: 'Courier New', Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-stack);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+      line-height: 1.4;
+    }
+
+    #game-container {
+      width: 100%;
+      max-width: 880px;
+      background-color: var(--card-bg);
+      border: 3px solid var(--card-border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-bottom: 2px dashed var(--card-border);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      background: #21262d;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-family: var(--font-stack);
+      font-size: 0.82rem;
+      font-weight: bold;
+      border-radius: 4px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-small:hover {
+      background: #30363d;
+      border-color: var(--accent-blue);
+      color: #ffffff;
+    }
+
+    #stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: #0d1117;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .stat-box {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-weight: bold;
+      color: var(--accent-blue);
+      font-size: 1rem;
+      display: block;
+      margin-top: 2px;
+    }
+
+    #screen-content {
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .prompt-title {
+      font-size: 1.15rem;
+      color: var(--accent-gold);
+      margin-bottom: 12px;
+      border-left: 4px solid var(--accent-gold);
+      padding-left: 10px;
+    }
+
+    .prompt-text {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: #e6edf3;
+      white-space: pre-line;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid var(--card-border);
+      padding: 14px 16px;
+      text-align: left;
+      font-family: var(--font-stack);
+      font-size: 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      line-height: 1.45;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .option-btn:hover {
+      background: #30363d;
+      border-color: var(--accent-blue);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.88);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      max-width: 680px;
+      width: 100%;
+      border-radius: 8px;
+      padding: 22px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.8);
+    }
+
+    .modal-title {
+      color: var(--accent-gold);
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+    }
+
+    .modal-body {
+      font-size: 0.95rem;
+      line-height: 1.55;
+      margin-bottom: 22px;
+      color: #e6edf3;
+    }
+
+    .debrief-box {
+      padding: 12px 14px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .debrief-correct {
+      background: rgba(46, 160, 67, 0.15);
+      border-left: 5px solid var(--accent-green);
+      color: #7ee787;
+    }
+
+    .debrief-incorrect {
+      background: rgba(218, 54, 51, 0.15);
+      border-left: 5px solid var(--accent-red);
+      color: #ffa198;
+    }
+
+    .editor-textarea {
+      width: 100%;
+      height: 260px;
+      background: #0d1117;
+      color: #79c0ff;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: var(--font-stack);
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+      resize: vertical;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-green);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+      z-index: 2000;
+      transition: opacity 0.3s;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 6px;
+      }
+      #game-container {
+        padding: 14px;
+      }
+      h1 {
+        font-size: 1.05rem;
+      }
+      .option-btn {
+        padding: 12px;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <header>
+      <h1>Highland & Harbour</h1>
+      <div class="header-controls">
+        <button id="restart-btn" class="btn-small" onclick="renderCharacterSelect()">🏠 MAIN MENU</button>
+        <button id="editor-btn" class="btn-small">⚙️ TEACHER EDITOR</button>
+      </div>
+    </header>
+
+    <div id="stats-bar" class="hidden">
+      <div class="stat-box">REVISION SCORE <span id="stat-score" class="stat-value">0</span></div>
+      <div class="stat-box">MORALE <span id="stat-morale" class="stat-value">100%</span></div>
+      <div class="stat-box">COMMUNITY SUPPORT <span id="stat-support" class="stat-value">100%</span></div>
+    </div>
+
+    <main id="screen-content">
+      <!-- Dynamic Content Screen -->
+    </main>
+  </div>
+
+  <!-- Historical Debrief Modal -->
+  <div id="debrief-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 id="debrief-header" class="modal-title">HISTORICAL ANALYSIS</h2>
+      <div id="debrief-status" class="debrief-box"></div>
+      <div id="debrief-text" class="modal-body"></div>
+      <button id="debrief-next-btn" class="btn-small" style="width: 100%; padding: 12px; background: var(--accent-blue); color: #0d1117; font-size: 0.95rem; text-align: center;">CONTINUE QUEST →</button>
+    </div>
+  </div>
+
+  <!-- Teacher Question Suite Editor Modal -->
+  <div id="editor-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 class="modal-title">TEACHER QUESTION SUITE</h2>
+      <p class="modal-body" style="font-size: 0.85rem; margin-bottom: 12px;">Edit the JSON question set below to customize historical scenarios, option choices, and revision debriefs for your classes.</p>
+      <textarea id="json-editor" class="editor-textarea"></textarea>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+        <button id="reset-default-btn" class="btn-small" style="border-color: var(--accent-red); color: #ffa198;">RESTORE DEFAULTS</button>
+        <button id="copy-json-btn" class="btn-small">COPY JSON</button>
+        <button id="save-json-btn" class="btn-small" style="background: var(--accent-green); color: #fff;">SAVE & APPLY</button>
+        <button id="close-editor-btn" class="btn-small">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden">Saved successfully!</div>
+
+  <script>
+    /* ==========================================================================
+       1. SQA REVISION QUESTION BANK (Migration & Empire 1830–1939)
+       ========================================================================== */
+    const DEFAULT_GAME_DATA = {
+      irish: {
+        title: "Irish Migrant Path (1840s–1880s)",
+        description: "You leave Ireland during the mid-19th century. Famine, poverty, and overpopulation force your family to seek a new beginning across the Irish Sea in industrial Scotland.",
+        stages: [
+          {
+            title: "Stage 1: Push & Pull Factors",
+            prompt: "The Great Potato Famine strikes Ireland in 1845, causing starvation and disease. You must decide why your family chooses Scotland as your destination.",
+            options: [
+              { text: "Scotland offers wages up to six times higher than Ireland, along with cheap and quick steamship passage across the Irish Sea.", correct: true, feedback: "Correct! Higher wages (up to 6 times higher than Ireland) and cheap, short boat journeys across the Irish Sea made Scotland the primary destination for starving Irish families." },
+              { text: "The British government promises free farm plots and free furnished houses in the Scottish Highlands for incoming Irish families.", correct: false, feedback: "Incorrect. The government provided no free land or housing. Immigrants had to pay rent for overcrowded urban slum tenements." },
+              { text: "Ireland has an abundance of factory jobs, but you prefer working in Highland agriculture.", correct: false, feedback: "Incorrect. Ireland had very few industries outside Ulster, meaning there were almost no industrial jobs available." }
+            ]
+          },
+          {
+            title: "Stage 2: Patterns of Settlement",
+            prompt: "Upon arriving in Scotland, where do you and your family choose to settle?",
+            options: [
+              { text: "Coatbridge ('Little Ireland'), Glasgow's East End, Paisley, or Dundee.", correct: true, feedback: "Correct! Irish immigrants settled heavily in industrial areas: Coatbridge (known as 'Little Ireland'), Glasgow's East End, Paisley, Dundee, and Edinburgh." },
+              { text: "Exclusively in the Gorbals district of Glasgow and Pollokshields.", correct: false, feedback: "Incorrect. The Gorbals was primarily the hub for Jewish settlement, while Pollokshields housed wealthier Jewish families." },
+              { text: "Remote villages in the Outer Hebrides and Ross-shire.", correct: false, feedback: "Incorrect. Highland areas offered very few industrial jobs; migrants moved to Central Belt factory and mining towns." }
+            ]
+          },
+          {
+            title: "Stage 3: Living Conditions & Health",
+            prompt: "You find lodging in an urban tenement. What living conditions do you face in the 1850s?",
+            options: [
+              { text: "Large families crowded into single-room flats without running water or toilets; diseases like Cholera and Tuberculosis spread rapidly.", correct: true, feedback: "Correct! Slum tenements lacked clean running water or indoor sanitation. Human waste ran down streets, leading to Cholera outbreaks, while damp rooms caused Tuberculosis." },
+              { text: "Spacious multi-room municipal apartments with indoor plumbing provided by local councils.", correct: false, feedback: "Incorrect. Council housing did not exist in the 19th century; immigrants relied on poor-quality private landlords." },
+              { text: "Clean rural cottages with fresh air and free medical treatment provided by employers.", correct: false, feedback: "Incorrect. Most Irish migrants lived in crowded, unhygienic urban centers without affordable medical treatment." }
+            ]
+          },
+          {
+            title: "Stage 4: Employment & Wages",
+            prompt: "You need to earn a living to support your family. What jobs do Irish workers predominantly take in Scotland?",
+            options: [
+              { text: "Working as 'Navvies' building railways and canals, working in coal mines (e.g. Coatbridge), cotton mills, and harvest farming.", correct: true, feedback: "Correct! Irish Navvies built vital infrastructure. By 1861, 45% of Coatbridge coal miners were Irish born. Many also worked in textile mills and seasonal farming." },
+              { text: "Opening ice cream parlours, fish & chip shops, and selling religious crafts door-to-door.", correct: false, feedback: "Incorrect. Ice cream parlours, chip shops, and door-to-door peddler crafts were operated by Italian immigrants." },
+              { text: "Working almost exclusively in Glasgow's garment repair shops and cigarette factories.", correct: false, feedback: "Incorrect. Tailoring and cigarette manufacturing were heavily dominated by Jewish immigrants." }
+            ]
+          },
+          {
+            title: "Stage 5: Community & The Catholic Church",
+            prompt: "How does the Catholic Church help your family adapt and survive in Scottish society?",
+            options: [
+              { text: "The Church builds schools, provides food and clothing via St Vincent de Paul, writes letters for illiterate migrants, and sets up football clubs like Celtic and Hibernian.", correct: true, feedback: "Correct! The Catholic Church doubled Catholic schools by the 1870s, provided vital welfare charities, helped illiterate migrants write home, and established Celtic FC (Glasgow) and Hibernian FC (Edinburgh)." },
+              { text: "The Church orders Irish immigrants to abandon all cultural traditions and blend completely into Protestant churches.", correct: false, feedback: "Incorrect. The Catholic Church helped preserve Irish cultural identity while offering community support." },
+              { text: "The Church prevents Catholic children from receiving any education in Scotland.", correct: false, feedback: "Incorrect. While Protestant teachers in state schools often refused to teach Catholic children, the Catholic Church established its own extensive school system." }
+            ]
+          }
+        ]
+      },
+      lithuanian: {
+        title: "Lithuanian Migrant Path (1890s–1914)",
+        description: "You are escaping Tsarist Russian oppression and agricultural poverty in Lithuania during the late 19th century.",
+        stages: [
+          {
+            title: "Stage 1: Push & Pull Factors",
+            prompt: "Why are you fleeing Lithuania to seek work in Scotland's heavy industries?",
+            options: [
+              { text: "To escape famine caused by agricultural depression and avoid forced conscription into the Tsar's Russian Imperial Army.", correct: true, feedback: "Correct! Lithuanians fled severe agricultural depression and mandatory conscription into the Russian Imperial military." },
+              { text: "To escape drought in Southern Italy and open cafes along the Scottish coast.", correct: false, feedback: "Incorrect. Fleeing agricultural drought in Italy applies to Italian immigrants." },
+              { text: "To manage jute shipping routes between Calcutta and Dundee.", correct: false, feedback: "Incorrect. The jute trade between Calcutta and Dundee was managed by Scottish Empire merchants." }
+            ]
+          },
+          {
+            title: "Stage 2: Settlement Patterns",
+            prompt: "Where do Lithuanian immigrants primarily settle in Scotland?",
+            options: [
+              { text: "Lanarkshire industrial towns such as Bellshill, Mossend, and Carfin.", correct: true, feedback: "Correct! Lithuanian communities formed close-knit settlements in Lanarkshire coal mining and steelworking towns like Bellshill, Mossend, and Carfin." },
+              { text: "The Highlands and Hebridean islands.", correct: false, feedback: "Incorrect. Heavy industries and coalfields were located in the Central Belt." },
+              { text: "Border agricultural towns like Berwick and Hawick.", correct: false, feedback: "Incorrect. Lithuanians settled near heavy steelworks and coal mines." }
+            ]
+          },
+          {
+            title: "Stage 3: Employment",
+            prompt: "Which heavy industries employ most Lithuanian men in Scotland?",
+            options: [
+              { text: "Lanarkshire coal mines and Ayrshire steelworks.", correct: true, feedback: "Correct! Heavy industrial labor in coal mining and iron/steel production recruited large numbers of Lithuanian workers." },
+              { text: "Cigarette manufacturing and garment tailoring.", correct: false, feedback: "Incorrect. Tailoring and cigarette making were trades associated with Jewish immigrants." },
+              { text: "Jute mills in Dundee and fishing fleets in Aberdeen.", correct: false, feedback: "Incorrect. Dundee jute mills employed local Scots and Irish female labor." }
+            ]
+          },
+          {
+            title: "Stage 4: Working Conditions & Health",
+            prompt: "What severe health and workplace hazards do you face in steel mills and chemical factories?",
+            options: [
+              { text: "Dangerous working conditions, lung problems caused by toxic factory chemical fumes, and hostile claims that you undercut wages.", correct: true, feedback: "Correct! Dangerous coal and steel jobs, lung disease caused by chemical pollution, and hostility over low wages plagued early Lithuanian workers." },
+              { text: "Guaranteed high pensions, short 6-hour workdays, and full sick pay.", correct: false, feedback: "Incorrect. Victorian and Edwardian heavy industry lacked pensions, sick leave, or short hours." },
+              { text: "Complete immunity from workplace accidents due to government safety laws.", correct: false, feedback: "Incorrect. Industrial safety laws were minimal, and industrial injury rates were high." }
+            ]
+          },
+          {
+            title: "Stage 5: Host Relations & Integration",
+            prompt: "How did relations between Scottish workers and Lithuanian immigrants evolve over time?",
+            options: [
+              { text: "Initially accused of being wage-undercutting strike-breakers, Lithuanians earned respect by joining local miners' unions and striking alongside Scots.", correct: true, feedback: "Correct! Initial hostility faded as Lithuanians integrated into local trade unions, adopted English names, and stood side-by-side with Scottish miners during strikes." },
+              { text: "They remained completely isolated and refused to join trade unions or learn English.", correct: false, feedback: "Incorrect. Lithuanians actively joined trade unions and integrated into local working-class communities." },
+              { text: "They were immediately given government housing grants under the Aliens Act 1905.", correct: false, feedback: "Incorrect. The Aliens Act 1905 was designed to restrict non-Empire immigrants, not grant housing." }
+            ]
+          }
+        ]
+      },
+      jewish: {
+        title: "Jewish Migrant Path (1880s–1920s)",
+        description: "You are escaping violent anti-Semitic persecution (pogroms) in Tsarist Russia and Eastern Europe.",
+        stages: [
+          {
+            title: "Stage 1: Push Factors",
+            prompt: "What severe danger forces your Jewish family to flee the Russian Empire for Scotland?",
+            options: [
+              { text: "Violent anti-Semitic attacks (pogroms) and state-sponsored religious persecution.", correct: true, feedback: "Correct! Violent pogroms and systemic discrimination in Tsarist Russia forced hundreds of thousands of Eastern European Jews to seek refuge." },
+              { text: "Severe potato crop failures across Western Europe.", correct: false, feedback: "Incorrect. Potato blight was the main push factor for Irish migration." },
+              { text: "Lack of commercial opportunities in the British Empire merchant navy.", correct: false, feedback: "Incorrect. Religious violence was the driving cause of Jewish migration." }
+            ]
+          },
+          {
+            title: "Stage 2: Settlement Patterns",
+            prompt: "Where do Jewish families settle upon arriving in Glasgow?",
+            options: [
+              { text: "The Gorbals in Glasgow (for working-class families) and later Pollokshields (for wealthier families).", correct: true, feedback: "Correct! The Gorbals became the bustling center of Glasgow's Jewish community, while wealthier families later moved to Pollokshields." },
+              { text: "Coatbridge and Bellshill coal mining villages.", correct: false, feedback: "Incorrect. Mining villages were settled heavily by Irish and Lithuanian migrants." },
+              { text: "Isolated rural farming crofts in the Scottish Borders.", correct: false, feedback: "Incorrect. Jewish immigrants settled in urban commercial hubs." }
+            ]
+          },
+          {
+            title: "Stage 3: Trades & Employment",
+            prompt: "What trades and commercial businesses do Jewish immigrants establish in Glasgow?",
+            options: [
+              { text: "Tailoring, garment repair, and cigarette manufacturing.", correct: true, feedback: "Correct! Jewish immigrants established a major tailoring and clothing repair industry in Glasgow, along with cigarette manufacturing." },
+              { text: "Heavy navvy railway construction and canal digging.", correct: false, feedback: "Incorrect. Heavy navvy labor was dominated by Irish workers." },
+              { text: "Operating fish & chip shops and selling ice cream from wheelbarrows.", correct: false, feedback: "Incorrect. Fish & chip shops and ice cream vending were Italian enterprises." }
+            ]
+          },
+          {
+            title: "Stage 4: Social & Political Impact",
+            prompt: "What legislation was passed by the British Parliament in 1905 that affected non-Empire immigrants like Eastern European Jews?",
+            options: [
+              { text: "The Aliens Act 1905, designed to restrict entry to immigrants from outside the British Empire.", correct: true, feedback: "Correct! The Aliens Act 1905 was introduced by the UK Parliament to curb non-British Empire immigration, directly targeting Eastern European immigrants." },
+              { text: "The Education Act 1872, prohibiting non-English instruction.", correct: false, feedback: "Incorrect. The 1872 Act established state education in Scotland." },
+              { text: "The Catholic Emancipation Act.", correct: false, feedback: "Incorrect. Catholic Emancipation occurred in 1829." }
+            ]
+          },
+          {
+            title: "Stage 5: Stereotypes vs. Reality",
+            prompt: "What false stereotype was directed at Jewish immigrants by some Scots during urban disease outbreaks?",
+            options: [
+              { text: "Jews were unfairly blamed by some Scots for spreading diseases like Cholera in slum tenements.", correct: true, feedback: "Correct! Ignorance surrounding dirty slum conditions led some Scots to scapegoat Jewish immigrants for disease outbreaks like Cholera." },
+              { text: "Jews were accused of opening cafes on the Christian Sabbath.", correct: false, feedback: "Incorrect. Complaints regarding Sunday openings were aimed at Italian cafe owners." },
+              { text: "Jews were accused of refusing to work in cities.", correct: false, feedback: "Incorrect. Jewish immigrants were highly active in urban trades." }
+            ]
+          }
+        ]
+      },
+      italian: {
+        title: "Italian Migrant Path (1880s–1930s)",
+        description: "You emigrate from rural villages in Central and Southern Italy seeking economic opportunities in Scotland.",
+        stages: [
+          {
+            title: "Stage 1: Push Factors",
+            prompt: "Why are you leaving Italy during the late 19th and early 20th centuries?",
+            options: [
+              { text: "Severe agricultural poverty, drought, and crop failures; some came after being refused entry at US immigration ports.", correct: true, feedback: "Correct! Rural poverty, drought, and strict US immigration quotas led many Italian migrants to settle in Scottish cities." },
+              { text: "Avoiding forced conscription into the Tsar's Russian Army.", correct: false, feedback: "Incorrect. Russian military conscription applied to Lithuanians." },
+              { text: "Fleeing heavy industrial factory pollution in Rome.", correct: false, feedback: "Incorrect. Rural poverty and agricultural failure were the main push factors." }
+            ]
+          },
+          {
+            title: "Stage 2: Early Employment",
+            prompt: "How do early Italian migrants earn a living when first arriving in Scottish towns?",
+            options: [
+              { text: "Starting as door-to-door peddlers selling religious craft items, then selling 'hokey pokey' ice cream from wheelbarrows.", correct: true, feedback: "Correct! Italian migrants began as peddlers selling craft items, then became famous street ice-cream vendors ('hokey pokey' men)." },
+              { text: "Working in heavy steelworks and coal pits in Lanarkshire.", correct: false, feedback: "Incorrect. Mining and steelworking were predominantly Irish and Lithuanian fields." },
+              { text: "Working as seasonal harvest harvesters in Aberdeenshire.", correct: false, feedback: "Incorrect. Farm harvest labor was heavily undertaken by seasonal Irish workers." }
+            ]
+          },
+          {
+            title: "Stage 3: Business Expansion",
+            prompt: "As your family saves money, what businesses do Italian entrepreneurs open across Scotland?",
+            options: [
+              { text: "Ice cream parlours, cafes, and fish & chip shops (e.g. Nardini's in Largs).", correct: true, feedback: "Correct! Italian families opened iconic cafes, fish & chip shops, and ice cream parlours across Scottish towns (e.g., Nardini's in Largs)." },
+              { text: "Jute manufacturing mills in Dundee.", correct: false, feedback: "Incorrect. Jute mills were large industrial complexes owned by wealthy Scottish merchants." },
+              { text: "Shipbuilding yards along the River Clyde.", correct: false, feedback: "Incorrect. Clydeside shipbuilding was heavy engineering." }
+            ]
+          },
+          {
+            title: "Stage 4: Cultural Tensions & Sabbath Debates",
+            prompt: "Why did traditional Scottish churchgoers criticize Italian cafes?",
+            options: [
+              { text: "Italian cafes opened on Sundays (the Christian Sabbath) and offered young people non-alcoholic social spaces.", correct: true, feedback: "Correct! Strict Scottish Sabbatarians viewed opening businesses on Sunday as immoral, sparking public debate." },
+              { text: "Italian cafes refused to serve Scottish customers.", correct: false, feedback: "Incorrect. Italian cafes welcomed all working-class customers." },
+              { text: "Italian cafes undercut coal mining wages.", correct: false, feedback: "Incorrect. Italian cafes were independent family-run businesses." }
+            ]
+          },
+          {
+            title: "Stage 5: Social Impact",
+            prompt: "What positive social impact did Italian cafes have on Scottish working-class life?",
+            options: [
+              { text: "They provided warm, alcohol-free community spaces where women and young people could socialize safely.", correct: true, feedback: "Correct! Italian cafes revolutionized Scottish leisure by offering welcoming, temperance-friendly social spaces." },
+              { text: "They founded football clubs like Hibernian and Celtic.", correct: false, feedback: "Incorrect. Celtic and Hibernian were founded by the Catholic Church for Irish communities." },
+              { text: "They provided government loans for railway construction.", correct: false, feedback: "Incorrect. Railways were built by Irish Navvies and funded by industrial investors." }
+            ]
+          }
+        ]
+      }
+    };
+
+    /* ==========================================================================
+       2. SAFE LOCALSTORAGE WRAPPER (Prevents blank screens on file:// or strict firewalls)
+       ========================================================================== */
+    function safeGetStorage(key) {
+      try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+      } catch (err) {
+        console.warn("localStorage read failed, falling back to memory:", err);
+        return null;
+      }
+    }
+
+    function safeSetStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.warn("localStorage write failed:", err);
+      }
+    }
+
+    /* ==========================================================================
+       3. GAME STATE MANAGEMENT
+       ========================================================================== */
+    let gameData = safeGetStorage('scotland_quest_data') || DEFAULT_GAME_DATA;
+    let currentPathKey = null;
+    let currentStageIdx = 0;
+    let score = 0;
+    let morale = 100;
+    let support = 100;
+
+    // DOM Elements
+    const screenContent = document.getElementById('screen-content');
+    const statsBar = document.getElementById('stats-bar');
+    const statScore = document.getElementById('stat-score');
+    const statMorale = document.getElementById('stat-morale');
+    const statSupport = document.getElementById('stat-support');
+
+    const debriefModal = document.getElementById('debrief-modal');
+    const debriefHeader = document.getElementById('debrief-header');
+    const debriefStatus = document.getElementById('debrief-status');
+    const debriefText = document.getElementById('debrief-text');
+    const debriefNextBtn = document.getElementById('debrief-next-btn');
+
+    const editorModal = document.getElementById('editor-modal');
+    const editorBtn = document.getElementById('editor-btn');
+    const jsonEditor = document.getElementById('json-editor');
+    const saveJsonBtn = document.getElementById('save-json-btn');
+    const copyJsonBtn = document.getElementById('copy-json-btn');
+    const resetDefaultBtn = document.getElementById('reset-default-btn');
+    const closeEditorBtn = document.getElementById('close-editor-btn');
+    const toast = document.getElementById('toast');
+
+    /* ==========================================================================
+       4. AUDIO SYNTHESIZER (Pure Web Audio API)
+       ========================================================================== */
+    function playSound(type) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'correct') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+          osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.18); // C6
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.18);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        }
+      } catch (e) {}
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+
+    /* ==========================================================================
+       5. GAME SCREENS & RENDERING
+       ========================================================================== */
+    function renderCharacterSelect() {
+      statsBar.classList.add('hidden');
+      currentPathKey = null;
+      currentStageIdx = 0;
+      score = 0;
+      morale = 100;
+      support = 100;
+
+      let html = `
+        <div class="prompt-title">SELECT YOUR IMMIGRANT ORIGIN (1830–1939)</div>
+        <p class="prompt-text">Choose a historical immigrant group to begin your Oregon Trail-style revision quest through Scottish migration history:</p>
+        <div class="options-grid">
+      `;
+
+      for (let key in gameData) {
+        const path = gameData[key];
+        html += `
+          <button class="option-btn" onclick="startPath('${key}')">
+            <strong style="color:var(--accent-gold); font-size:1rem;">${path.title}</strong><br>
+            <span style="font-size:0.83rem; color:var(--text-muted); display:block; margin-top:4px;">${path.description}</span>
+          </button>
+        `;
+      }
+
+      html += `</div>`;
+      screenContent.innerHTML = html;
+    }
+
+    function startPath(key) {
+      currentPathKey = key;
+      currentStageIdx = 0;
+      statsBar.classList.remove('hidden');
+      updateStatsUI();
+      renderStage();
+    }
+
+    function updateStatsUI() {
+      statScore.textContent = score;
+      statMorale.textContent = morale + "%";
+      statSupport.textContent = support + "%";
+    }
+
+    function renderStage() {
+      const path = gameData[currentPathKey];
+      if (!path || !path.stages || currentStageIdx >= path.stages.length) {
+        renderVictory();
+        return;
+      }
+
+      const stage = path.stages[currentStageIdx];
+      let html = `
+        <div class="prompt-title">${stage.title}</div>
+        <p class="prompt-text">${stage.prompt}</p>
+        <div class="options-grid">
+      `;
+
+      stage.options.forEach((opt, idx) => {
+        html += `
+          <button class="option-btn" onclick="makeChoice(${idx})">
+            ${opt.text}
+          </button>
+        `;
+      });
+
+      html += `</div>`;
+      screenContent.innerHTML = html;
+    }
+
+    function makeChoice(optIdx) {
+      const stage = gameData[currentPathKey].stages[currentStageIdx];
+      const selected = stage.options[optIdx];
+
+      if (selected.correct) {
+        playSound('correct');
+        score += 100;
+        debriefHeader.textContent = "HISTORICAL ANALYSIS: ACCURATE";
+        debriefHeader.style.color = "var(--accent-green)";
+        debriefStatus.className = "debrief-box debrief-correct";
+        debriefStatus.textContent = "✔ Correct Historical Choice (+100 Points)";
+      } else {
+        playSound('wrong');
+        morale = Math.max(0, morale - 20);
+        support = Math.max(0, support - 15);
+        debriefHeader.textContent = "HISTORICAL ANALYSIS: MISCONCEPTION";
+        debriefHeader.style.color = "var(--accent-red)";
+        debriefStatus.className = "debrief-box debrief-incorrect";
+        debriefStatus.textContent = "✖ Historical Error (-20% Morale, -15% Support)";
+      }
+
+      updateStatsUI();
+      debriefText.textContent = selected.feedback;
+      debriefModal.classList.remove('hidden');
+    }
+
+    debriefNextBtn.addEventListener('click', () => {
+      debriefModal.classList.add('hidden');
+      if (morale <= 0) {
+        renderGameOver();
+      } else {
+        currentStageIdx++;
+        renderStage();
+      }
+    });
+
+    function renderVictory() {
+      statsBar.classList.remove('hidden');
+      let html = `
+        <div class="prompt-title" style="color:var(--accent-green); border-left-color:var(--accent-green);">QUEST COMPLETE!</div>
+        <p class="prompt-text">
+          Congratulations! You have successfully completed the <strong>${gameData[currentPathKey].title}</strong>.<br><br>
+          <strong>Final Revision Score:</strong> ${score} Points<br>
+          <strong>Ending Morale:</strong> ${morale}%<br>
+          <strong>Community Support:</strong> ${support}%
+        </p>
+        <button class="option-btn" onclick="renderCharacterSelect()" style="text-align:center; font-weight:bold; background:var(--accent-green); color:#ffffff; border-color:var(--accent-green-hover);">
+          🔄 RESTART / PLAY ANOTHER IMMIGRANT PATH
+        </button>
+      `;
+      screenContent.innerHTML = html;
+    }
+
+    function renderGameOver() {
+      statsBar.classList.remove('hidden');
+      let html = `
+        <div class="prompt-title" style="color:var(--accent-red); border-left-color:var(--accent-red);">QUEST FAILED</div>
+        <p class="prompt-text">
+          Your community morale dropped to 0% due to severe historical misconceptions.<br><br>
+          <strong>Final Score:</strong> ${score} Points
+        </p>
+        <button class="option-btn" onclick="renderCharacterSelect()" style="text-align:center; font-weight:bold; background:var(--accent-red); color:#ffffff;">
+          🔄 TRY AGAIN
+        </button>
+      `;
+      screenContent.innerHTML = html;
+    }
+
+    /* ==========================================================================
+       6. TEACHER QUESTION SUITE EDITOR
+       ========================================================================== */
+    editorBtn.addEventListener('click', () => {
+      jsonEditor.value = JSON.stringify(gameData, null, 2);
+      editorModal.classList.remove('hidden');
+    });
+
+    closeEditorBtn.addEventListener('click', () => {
+      editorModal.classList.add('hidden');
+    });
+
+    saveJsonBtn.addEventListener('click', () => {
+      try {
+        const updated = JSON.parse(jsonEditor.value);
+        gameData = updated;
+        safeSetStorage('scotland_quest_data', gameData);
+        editorModal.classList.add('hidden');
+        showToast("Question Suite Saved!");
+        renderCharacterSelect();
+      } catch (err) {
+        alert("Invalid JSON format. Please check your syntax.");
+      }
+    });
+
+    resetDefaultBtn.addEventListener('click', () => {
+      gameData = DEFAULT_GAME_DATA;
+      safeSetStorage('scotland_quest_data', gameData);
+      jsonEditor.value = JSON.stringify(DEFAULT_GAME_DATA, null, 2);
+      showToast("Restored to Default SQA Booklet Data");
+    });
+
+    copyJsonBtn.addEventListener('click', () => {
+      try {
+        navigator.clipboard.writeText(jsonEditor.value);
+        showToast("JSON Copied to Clipboard!");
+      } catch (e) {
+        jsonEditor.select();
+        document.execCommand('copy');
+        showToast("JSON Copied!");
+      }
+    });
+
+    /* ==========================================================================
+       7. TRIPLE-FAIL-SAFE APP INITIALIZATION
+       ========================================================================== */
+    function initApp() {
+      try {
+        renderCharacterSelect();
+      } catch (err) {
+        console.error("Initialization error:", err);
+      }
+    }
+
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+      initApp();
+    } else {
+      document.addEventListener('DOMContentLoaded', initApp);
+    }
+    window.addEventListener('load', initApp);
+  </script>
+</body>
+</html>
